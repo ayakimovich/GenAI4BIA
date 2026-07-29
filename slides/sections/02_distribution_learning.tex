@@ -1,0 +1,168 @@
+% Section 2: Distribution Learning & Probability Foundations
+
+\section{Distribution Learning \& Probability}
+
+\begin{frame}[fragile]{Empirical Data Distribution vs Parametric Density}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Given observed image samples $\{x_1, x_2, \dots, x_N\} \sim p_{\text{data}}(x)$:
+\begin{equation*}
+p_{\text{data}}(x) = \frac{1}{N} \sum_{i=1}^N \delta(x - x_i)
+\end{equation*}
+
+Our goal is to learn a continuous parametric distribution $p_\theta(x)$ that approximates $p_{\text{data}}(x)$.
+
+Generative modeling = matching distributions:
+\begin{equation*}
+p_\theta(x) \approx p_{\text{data}}(x)
+\end{equation*}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+$p_{\text{data}}$ represents the real cell population containing a mixture of GFP-positive (bright) and GFP-negative (dark) cells. The model distribution $p_\theta$ must match this biological mixture.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+import torch
+import torch.distributions as dist
+
+# Empirical sample batch x_data
+x_data = torch.randn(100, 1) * 2.0 + 5.0
+
+# Parametric model distribution p_theta = N(mu, sigma)
+mu = torch.tensor([0.0], requires_grad=True)
+sigma = torch.tensor([1.0], requires_grad=True)
+
+# Define parametric distribution family
+p_theta = dist.Normal(loc=mu, scale=sigma)
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Maximum Likelihood Estimation (MLE)}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Finding optimal parameters $\theta^*$ by maximizing log-likelihood:
+\begin{equation*}
+\theta^* = \arg\max_\theta \sum_{i=1}^N \log p_\theta(x_i)
+\end{equation*}
+
+Equivalent to minimizing Negative Log-Likelihood (NLL) / Forward KL:
+\begin{equation*}
+\mathcal{L}_{\text{NLL}}(\theta) = -\E_{x \sim p_{\text{data}}} \big[ \log p_\theta(x) \big]
+\end{equation*}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Optimizes network parameters so that generating bright GFP signals for positive cells (and zero signal for negative cells) has maximum probability under true micrographs.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def fit_mle(x_samples, p_theta_cls, lr=0.1, steps=100):
+    mu = torch.tensor([0.0], requires_grad=True)
+    sigma = torch.tensor([1.0], requires_grad=True)
+    opt = torch.optim.Adam([mu, sigma], lr=lr)
+    
+    for _ in range(steps):
+        opt.zero_grad()
+        p_theta = p_theta_cls(loc=mu, scale=F.softplus(sigma))
+        
+        # Negative Log-Likelihood Loss
+        nll_loss = -p_theta.log_prob(x_samples).mean()
+        nll_loss.backward()
+        opt.step()
+        
+    return mu, F.softplus(sigma)
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Kullback-Leibler (KL) Divergence}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Asymmetry measure of distance between two probability densities $p$ and $q$:
+\begin{equation*}
+\KL{p}{q} = \int p(x) \log \frac{p(x)}{q(x)} \, dx
+\end{equation*}
+
+Analytical solution for two Gaussians $\mathcal{N}_0(\mu_0, \sigma_0^2)$ and $\mathcal{N}_1(\mu_1, \sigma_1^2)$:
+\begin{equation*}
+\KL{p_0}{p_1} = \log \frac{\sigma_1}{\sigma_0} + \frac{\sigma_0^2 + (\mu_0 - \mu_1)^2}{2\sigma_1^2} - \frac{1}{2}
+\end{equation*}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Quantifies information loss when approximating true GFP brightness distributions. Forward KL heavily penalizes predicting false GFP expression in cells that are actually negative.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+# Analytical KL Divergence between 2 Gaussians in PyTorch
+
+def kl_divergence_gaussians(mu0, log_var0, mu1=0.0, log_var1=0.0):
+    # KL( N(mu0, var0) || N(mu1, var1) )
+    var0 = torch.exp(log_var0)
+    var1 = torch.exp(torch.tensor(log_var1))
+    
+    kl = 0.5 * (
+        (log_var1 - log_var0) + 
+        (var0 + (mu0 - mu1)**2) / var1 - 
+        1.0
+    )
+    return kl.sum(dim=-1)
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Wasserstein Distance (Optimal Transport)}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Earth Mover's Distance ($W_1$ metric):
+\begin{equation*}
+W_1(p, q) = \inf_{\gamma \in \Pi(p,q)} \E_{(x,y)\sim\gamma} \big[ \|x - y\| \big]
+\end{equation*}
+
+Kantorovich-Rubinstein Duality:
+\begin{equation*}
+W_1(p_{\text{data}}, p_\theta) = \sup_{\|f\|_L \le 1} \E_{x \sim p_{\text{data}}}[f(x)] - \E_{x \sim p_\theta}[f(x)]
+\end{equation*}
+
+Key benefit: Smooth gradients even when support of $p$ and $q$ do not overlap!
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Measures the minimum "work" needed to shift predicted cell GFP fluorescence profiles to match true biological GFP distributions across positive and negative populations.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+# 1D Empirical Wasserstein-1 Distance calculation
+
+def compute_w1_distance(x_real, x_gen):
+    # Sort samples along batch dimension
+    x_real_sorted, _ = torch.sort(x_real, dim=0)
+    x_gen_sorted, _ = torch.sort(x_gen, dim=0)
+    
+    # EMD in 1D is L1 distance between sorted quantiles
+    w1_dist = torch.mean(torch.abs(x_real_sorted - x_gen_sorted))
+    return w1_dist
+\end{lstlisting}
+\end{columns}
+\end{frame}

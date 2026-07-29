@@ -1,0 +1,49 @@
+\documentclass[aspectratio=169, 10pt]{beamer}
+
+% Load Preamble
+\input{preamble.tex}
+
+\title[GenAI Bioimage Analysis]{Bridging Scales through Generative AI for Inverse Problems in Biomedical Computational Microscopy}
+\subtitle{Mathematical Concepts, Inverse Problems, \& VIRVS Virtual Staining Benchmark}
+\author{Prof. Artur Yakimovich. Machine Learning for Infection and Disease Group}
+\institute{\vspace{0.2cm}\fontsize{7pt}{8pt}\selectfont \textbf{License}: Licensed under Creative Commons Attribution 4.0 International (\textbf{CC BY 4.0})}
+\date{\today}
+
+\begin{document}
+
+% Title Slide
+\begin{frame}[plain]
+    \titlepage
+    \vspace{-0.5cm}
+    \centering
+    \includegraphics[height=1.0cm]{../assets/logo.png}
+\end{frame}
+
+% Table of Contents Slide
+\begin{frame}{Course Overview}
+    \tableofcontents
+\end{frame}
+
+% Include Section Slides
+\input{sections/01_intro_inverse_problems.tex}
+\input{sections/02_distribution_learning.tex}
+\input{sections/03_generative_models.tex}
+\input{sections/04_virtual_staining_eval.tex}
+
+% Summary & Q&A Slide
+\begin{frame}{Summary \& Workshop Transition}
+    \begin{block}{Key Takeaways}
+        \begin{enumerate}
+            \item \textbf{Inverse Problems}: Virtual Staining maps label-free micrographs $y$ to continuous virus infection reporter fluorescence $x$.
+            \item \textbf{Distribution Learning}: Generative models minimize divergence (NLL, KL, Wasserstein) between empirical data $p_{\text{data}}$ and model $p_\theta$.
+            \item \textbf{Model Families}: VAEs (ELBO), Pix2Pix GANs (cGAN + $L_1$), and Diffusion Models ($\epsilon$-prediction).
+            \item \textbf{VIRVS Benchmarking}: Multi-faceted evaluation combining PSNR, SSIM, PCC, MAE, and cell-level viral reporter quantification.
+        \end{enumerate}
+    \end{block}
+
+    \vspace{0.5cm}
+    \centering
+    \textbf{Next Up: Practical VIRVS Benchmark Notebooks!}
+\end{frame}
+
+\end{document}

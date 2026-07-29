@@ -1,0 +1,179 @@
+% Section 3: Generative Model Families (VAEs, GANs, Diffusion)
+
+\section{Generative Model Families}
+
+\begin{frame}[fragile]{Variational Autoencoders (VAEs) \& The ELBO}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Evidence Lower Bound (ELBO) objective function:
+\begin{equation*}
+\log p_\theta(x) \ge \E_{q_\phi(z|x)}[\log p_\theta(x|z)] - \KL{q_\phi(z|x)}{p(z)}
+\end{equation*}
+
+\begin{itemize}
+    \item First term: Reconstruction log-likelihood (MSE/BCE).
+    \item Second term: Latent prior regularization ($p(z) = \mathcal{N}(0, I)$).
+\end{itemize}
+
+Loss to minimize:
+\begin{equation*}
+\mathcal{L}_{\text{VAE}}(\theta, \phi) = \mathcal{L}_{\text{recon}} + \beta \, \mathcal{L}_{\text{KL}}
+\end{equation*}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Reconstruction ensures predicted GFP aligns with DAPI nuclei; KL penalty forces latent representations of cell infection state (GFP+ vs GFP-) into a smooth, continuous code space.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def vae_loss_function(x_recon, x_target, mu, log_var, beta=1.0):
+    # Reconstruction loss (MSE)
+    recon_loss = F.mse_loss(x_recon, x_target, reduction='mean')
+    
+    # Analytical KL divergence against N(0, I)
+    kl_loss = -0.5 * torch.mean(
+        1 + log_var - mu.pow(2) - log_var.exp()
+    )
+    
+    total_loss = recon_loss + beta * kl_loss
+    return total_loss, recon_loss, kl_loss
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{The Reparameterization Trick}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Sampling $z \sim q_\phi(z|x) = \mathcal{N}(\mu_\phi(x), \sigma_\phi^2(x) I)$ blocks backpropagation!
+
+\textbf{Solution}: Isolate stochasticity into independent standard Gaussian noise $\epsilon$:
+\begin{equation*}
+z = \mu_\phi(x) + \sigma_\phi(x) \odot \epsilon, \quad \epsilon \sim \mathcal{N}(0, I)
+\end{equation*}
+
+Gradients $\frac{\partial \mathcal{L}}{\partial \mu}$ and $\frac{\partial \mathcal{L}}{\partial \sigma}$ flow deterministically through encoder parameters $\phi$.
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Allows sampling continuous variations in GFP expression (e.g., dim vs bright positive cells) while enabling backpropagation gradients to pass cleanly through encoder weights.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def reparameterize(mu, log_var):
+    # Standard deviation sigma = exp(0.5 * log_var)
+    std = torch.exp(0.5 * log_var)
+    
+    # Stochastic noise epsilon ~ N(0, I)
+    eps = torch.randn_like(std)
+    
+    # Deterministic continuous transformation z
+    z = mu + std * eps
+    return z
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Conditional GANs \& Pix2Pix Virtual Staining}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Conditional GAN minimax game for virtual staining ($y \to x$):
+\begin{equation*}
+\begin{aligned}
+\min_G \max_D \, & \E_{y, x}[\log D(y, x)] \, + \\
+& \E_{y, z}[\log(1 - D(y, G(y, z)))]
+\end{aligned}
+\end{equation*}
+
+Pix2Pix total generator loss ($L_1$ color/structure match):
+\begin{equation*}
+\mathcal{L}_{\text{Pix2Pix}} = \mathcal{L}_{\text{cGAN}}(G, D) + \lambda \|x - G(y, z)\|_1
+\end{equation*}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Generator synthesizes GFP patterns from DAPI; Discriminator acts like an expert microscopist checking if GFP co-localizes strictly with positive cells while staying 0 in negative cells.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def pix2pix_generator_loss(D, G, y_brightfield, x_gt_fluo, lmbda=100.0):
+    # Generate predicted virtual stain
+    x_fake = G(y_brightfield)
+    
+    # Discriminator score on fake pair (y, G(y))
+    pred_fake = D(y_brightfield, x_fake)
+    
+    # Adversarial Loss (wants D to predict 1)
+    loss_gan = F.binary_cross_entropy_with_logits(
+        pred_fake, torch.ones_like(pred_fake)
+    )
+    
+    # L1 Reconstruction Loss
+    loss_l1 = F.l1_loss(x_fake, x_gt_fluo)
+    
+    return loss_gan + lmbda * loss_l1
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Denoising Diffusion Probabilistic Models (DDPM)}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Forward noise process adding Gaussian noise over timesteps $t$:
+\begin{equation*}
+q(x_t | x_0) = \mathcal{N}\left(x_t; \sqrt{\bar{\alpha}_t} x_0, (1 - \bar{\alpha}_t) I\right)
+\end{equation*}
+
+Simplified training objective ($\epsilon$-prediction MSE):
+\begin{equation*}
+\Lsimple(\theta) = \E_{t, x_0, \epsilon} \left[ \left\| \epsilon - \epsilon_\theta(x_t, t) \right\|^2 \right]
+\end{equation*}
+
+\begin{itemize}
+    \item $x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t} \, \epsilon$
+    \item $\epsilon_\theta(x_t, t)$: U-Net predicting added noise $\epsilon$.
+\end{itemize}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Gradually degrades GFP fluorescence into pure random noise, then learns to iteratively synthesize sharp GFP signals conditional on nuclear DAPI features.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def ddpm_training_step(unet_noise_pred, x0, t, alpha_bar_t):
+    # 1. Sample noise epsilon ~ N(0, I)
+    epsilon = torch.randn_like(x0)
+    
+    # 2. Compute noisy image x_t
+    sqrt_alpha_bar = torch.sqrt(alpha_bar_t)
+    sqrt_one_minus_alpha_bar = torch.sqrt(1.0 - alpha_bar_t)
+    
+    x_t = sqrt_alpha_bar * x0 + sqrt_one_minus_alpha_bar * epsilon
+    
+    # 3. Predict noise using U-Net
+    epsilon_pred = unet_noise_pred(x_t, t)
+    
+    # 4. MSE Loss on noise
+    loss = F.mse_loss(epsilon_pred, epsilon)
+    return loss
+\end{lstlisting}
+\end{columns}
+\end{frame}

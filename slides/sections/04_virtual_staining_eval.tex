@@ -1,0 +1,167 @@
+% Section 4: Evaluating Virtual Staining Models in Bioimaging
+
+\section{Virtual Staining Evaluation Metrics}
+
+\begin{frame}[fragile]{Pixel-Wise Metrics: PSNR \& MAE}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Mean Absolute Error (MAE):
+\begin{equation*}
+\text{MAE}(x, \hat{x}) = \frac{1}{N} \sum_{i=1}^N |x_i - \hat{x}_i|
+\end{equation*}
+
+Peak Signal-to-Noise Ratio (PSNR in dB):
+\begin{equation*}
+\text{PSNR}(x, \hat{x}) = 10 \cdot \log_{10} \left( \frac{\text{MAX}_x^2}{\text{MSE}(x, \hat{x})} \right)
+\end{equation*}
+
+where $\text{MSE}(x, \hat{x}) = \frac{1}{N} \sum_{i=1}^N (x_i - \hat{x}_i)^2$.
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+MAE measures average GFP intensity error per pixel. Lower MAE means correctly predicting 0 GFP in negative cells and accurate brightness in GFP-positive cells.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def compute_psnr_mae(x_gt, x_pred, max_val=1.0):
+    # MAE Calculation
+    mae = torch.mean(torch.abs(x_gt - x_pred))
+    
+    # MSE & PSNR Calculation
+    mse = torch.mean((x_gt - x_pred) ** 2)
+    if mse == 0:
+        psnr = torch.tensor(float('inf'))
+    else:
+        psnr = 10.0 * torch.log10((max_val ** 2) / mse)
+        
+    return psnr.item(), mae.item()
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Structural Similarity Index (SSIM)}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+SSIM models human visual perception (luminance, contrast, structure):
+\begin{equation*}
+\text{SSIM}(x, \hat{x}) = \frac{(2\mu_x \mu_{\hat{x}} + C_1)(2\sigma_{x\hat{x}} + C_2)}{(\mu_x^2 + \mu_{\hat{x}}^2 + C_1)(\sigma_x^2 + \sigma_{\hat{x}}^2 + C_2)}
+\end{equation*}
+
+\begin{itemize}
+    \item $\mu_x, \mu_{\hat{x}}$: Local mean intensities.
+    \item $\sigma_x^2, \sigma_{\hat{x}}^2$: Local variances.
+    \item $\sigma_{x\hat{x}}$: Local covariance.
+    \item $C_1, C_2$: Stabilization constants.
+\end{itemize}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Evaluates whether predicted GFP spatial boundaries match true cell shapes around DAPI-stained nuclei, rather than just checking overall background brightness.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+from skimage.metrics import structural_similarity as ssim
+
+def compute_ssim_numpy(x_gt_np, x_pred_np):
+    # x_gt_np, x_pred_np: [H, W] float32 arrays in [0, 1]
+    ssim_score = ssim(
+        x_gt_np, 
+        x_pred_np, 
+        data_range=1.0,
+        win_size=7
+    )
+    return ssim_score
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Pearson Correlation Coefficient (PCC)}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{Mathematical Formulation}
+
+Linear correlation between predicted fluorescence $\hat{x}$ and ground truth $x$:
+\begin{equation*}
+\text{PCC}(x, \hat{x}) = \frac{\sum_{i=1}^N (x_i - \bar{x})(\hat{x}_i - \bar{\hat{x}})}{\sqrt{\sum_{i=1}^N (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^N (\hat{x}_i - \bar{\hat{x}})^2}}
+\end{equation*}
+
+\begin{itemize}
+    \item Range: $[-1, 1]$.
+    \item $\text{PCC} = 1$: Perfect linear relationship.
+    \item Insensitive to global linear intensity scaling/shifts!
+\end{itemize}
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Checks if relative GFP intensity rankings across cells match truth (strongly positive vs weakly positive cells) regardless of overall brightness scaling.
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def compute_pcc(x_gt, x_pred):
+    # Flatten spatial dimensions
+    x1 = x_gt.flatten()
+    x2 = x_pred.flatten()
+    
+    # Zero-mean vectors
+    x1_m = x1 - torch.mean(x1)
+    x2_m = x2 - torch.mean(x2)
+    
+    # Covariance divided by product of standard deviations
+    num = torch.sum(x1_m * x2_m)
+    den = torch.sqrt(torch.sum(x1_m ** 2) * torch.sum(x2_m ** 2) + 1e-8)
+    
+    pcc = num / den
+    return pcc.item()
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Biological Validity: Single-Cell Infection Quantification}
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{VIRVS Biological Metric}
+
+Virtual staining models must preserve biologically meaningful signal quantification!
+
+For single-cell binary mask $M_k \in \{0, 1\}^{H \times W}$:
+\begin{equation*}
+I_{\text{cell}, k} = \frac{1}{\sum_{ij} M_{k, ij}} \sum_{i,j} M_{k, ij} \cdot x_{ij}
+\end{equation*}
+
+Benchmark compares true single-cell viral intensity $I_{\text{true}, k}$ vs predicted $I_{\text{pred}, k}$ across infection states.
+
+\vspace{1mm}
+\textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
+\fontsize{6.5pt}{7.5pt}\selectfont
+Directly quantifies mean GFP reporter signal within each DAPI-segmented cell mask to classify individual cells as infected (GFP+) or uninfected (GFP-).
+
+\column{0.52\textwidth}
+\textbf{Python Code Equivalent}
+\begin{lstlisting}
+def compute_cell_level_viral_reporter(x_fluo, cell_masks):
+    # cell_masks: [Num_Cells, H, W] boolean array
+    cell_intensities = []
+    
+    for k in range(cell_masks.shape[0]):
+        mask = cell_masks[k]
+        # Mean fluorescence intensity inside cell mask k
+        cell_intensity = (x_fluo * mask).sum() / (mask.sum() + 1e-8)
+        cell_intensities.append(cell_intensity)
+        
+    return torch.tensor(cell_intensities)
+\end{lstlisting}
+\end{columns}
+\end{frame}

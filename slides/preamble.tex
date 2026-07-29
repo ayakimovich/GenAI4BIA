@@ -1,0 +1,86 @@
+% Course Slide Deck Preamble
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{tikz}
+
+% Color Palette
+\definecolor{mainblue}{RGB}{24, 76, 120}
+\definecolor{accentblue}{RGB}{0, 136, 204}
+\definecolor{codebg}{RGB}{245, 247, 250}
+\definecolor{codeframe}{RGB}{200, 205, 215}
+\definecolor{commentgreen}{RGB}{46, 139, 87}
+\definecolor{keywordpurple}{RGB}{128, 0, 128}
+\definecolor{stringred}{RGB}{178, 34, 34}
+\definecolor{shadowgray}{RGB}{220, 224, 230}
+
+% Beamer Theme Base
+\usetheme{Madrid}
+\usecolortheme{whale}
+
+% White Title Header with Black Text
+\setbeamercolor{frametitle}{bg=white,fg=black}
+\setbeamercolor{titlelike}{bg=white,fg=black}
+\setbeamercolor{structure}{fg=mainblue}
+\setbeamercolor{palette primary}{bg=mainblue,fg=white}
+\setbeamercolor{palette secondary}{bg=accentblue,fg=white}
+
+% Remove navigation symbols & Clean Footline
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% Custom Frame Title with Vertically Centered Title & Logo + Drop Shadow Line
+\setbeamertemplate{frametitle}{
+    \nointerlineskip
+    \begin{beamercolorbox}[wd=\paperwidth,ht=1.2cm,dp=0cm]{frametitle}
+        \begin{tikzpicture}
+            \useasboundingbox (0,0) rectangle (\paperwidth,1.2cm);
+            \node[anchor=west, inner sep=0pt, align=left] at (0.8cm, 0.6cm) {%
+                \begin{minipage}{0.70\paperwidth}
+                    \raggedright
+                    {\usebeamerfont{frametitle}\color{black}\insertframetitle\par}%
+                    \ifx\insertframesubtitle\@empty
+                    \else
+                        \vspace{1pt}%
+                        {\usebeamerfont{framesubtitle}\color{gray}\insertframesubtitle\par}%
+                    \fi
+                \end{minipage}%
+            };
+            \node[anchor=east, inner sep=0pt] at (\paperwidth-0.8cm, 0.6cm) {%
+                \includegraphics[height=0.7cm,keepaspectratio]{../assets/logo.png}%
+            };
+        \end{tikzpicture}%
+    \end{beamercolorbox}
+    % Soft gray drop shadow / line separator
+    \nointerlineskip
+    \vspace{-1pt}
+    \begin{tikzpicture}[remember picture, overlay]
+        \fill[shadowgray] (0,0) rectangle (\paperwidth, -0.04cm);
+        \fill[gray!20, opacity=0.5] (0,-0.04cm) rectangle (\paperwidth, -0.08cm);
+    \end{tikzpicture}
+}
+
+% Listings Configuration for Python Code
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\fontsize{6.5pt}{7.5pt}\selectfont\color{black},
+    keywordstyle=\bfseries\color{keywordpurple},
+    commentstyle=\itshape\color{commentgreen},
+    stringstyle=\color{stringred},
+    numbers=none,
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{codeframe}
+}
+
+% Custom Commands
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\KL}[2]{D_{\text{KL}}\left(#1 \,||\, #2\right)}
+\newcommand{\Lsimple}{\mathcal{L}_{\text{simple}}}
