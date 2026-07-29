@@ -64,8 +64,8 @@ import os
 
 if 'google.colab' in sys.modules:
     print("[+] Google Colab detected! Installing dependencies and setting up paths...")
-    !git clone https://github.com/casus/GenAI_BIA_Course.git /content/GenAI_BIA_Course
-    %cd /content/GenAI_BIA_Course/practical
+    !git clone https://github.com/ayakimovich/GenAI4BIA.git /content/GenAI4BIA
+    %cd /content/GenAI4BIA/practical
     !pip install -r ../requirements.txt -q
     sys.path.append(os.path.abspath("."))
 else:
@@ -148,8 +148,8 @@ import matplotlib.pyplot as plt
 
 if 'google.colab' in sys.modules:
     print("[+] Google Colab detected!")
-    !git clone https://github.com/casus/GenAI_BIA_Course.git /content/GenAI_BIA_Course
-    %cd /content/GenAI_BIA_Course/practical
+    !git clone https://github.com/ayakimovich/GenAI4BIA.git /content/GenAI4BIA
+    %cd /content/GenAI4BIA/practical
     !pip install -r ../requirements.txt -q
     sys.path.append(os.path.abspath("."))
 else:
@@ -266,8 +266,8 @@ import os
 
 if 'google.colab' in sys.modules:
     print("[+] Google Colab detected!")
-    !git clone https://github.com/casus/GenAI_BIA_Course.git /content/GenAI_BIA_Course
-    %cd /content/GenAI_BIA_Course/practical
+    !git clone https://github.com/ayakimovich/GenAI4BIA.git /content/GenAI4BIA
+    %cd /content/GenAI4BIA/practical
     !pip install -r ../requirements.txt -q
     sys.path.append(os.path.abspath("."))
 else:
@@ -401,8 +401,8 @@ import os
 
 if 'google.colab' in sys.modules:
     print("[+] Google Colab detected!")
-    !git clone https://github.com/casus/GenAI_BIA_Course.git /content/GenAI_BIA_Course
-    %cd /content/GenAI_BIA_Course/practical
+    !git clone https://github.com/ayakimovich/GenAI4BIA.git /content/GenAI4BIA
+    %cd /content/GenAI4BIA/practical
     !pip install -r ../requirements.txt -q
     sys.path.append(os.path.abspath("."))
 else:
@@ -557,8 +557,8 @@ import os
 
 if 'google.colab' in sys.modules:
     print("[+] Google Colab detected!")
-    !git clone https://github.com/casus/GenAI_BIA_Course.git /content/GenAI_BIA_Course
-    %cd /content/GenAI_BIA_Course/practical
+    !git clone https://github.com/ayakimovich/GenAI4BIA.git /content/GenAI4BIA
+    %cd /content/GenAI4BIA/practical
     !pip install -r ../requirements.txt -q
     sys.path.append(os.path.abspath("."))
 else:

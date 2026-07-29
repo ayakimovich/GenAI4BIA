@@ -20,11 +20,11 @@ This repository is divided into two primary components:
 2. **`practical/` — VIRVS Benchmark Reproduction (Hands-on Tutorials)**
    - Based on the paper:
      > Wyrzykowska, M., della Maggiora, G., Deshpande, N., Mokarian, A., & Yakimovich, A. (2024/2025). *A Benchmark for Virus Infection Reporter Virtual Staining in Fluorescence and Brightfield Microscopy*. Scientific Data / bioRxiv. [GitHub: casus/virvs](https://github.com/casus/virvs)
-   - [Notebook 01](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/01_data_download_and_prep.ipynb): Data Download & Preparation (VIRVS dataset layout, RODARE access, synthetic mock generator).
-   - [Notebook 01b](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/01b_autoencoders_and_vaes.ipynb): Autoencoders & VAEs (Autoencoders vs VAEs, ELBO objective, generative sampling, latent space interpolation).
-   - [Notebook 02](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/02_baseline_regression_unet.ipynb): U-Net Baseline Regression (Predicting continuous infection fluorescence from brightfield).
-   - [Notebook 03](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/03_generative_pix2pix_gan.ipynb): Pix2Pix Conditional GAN (Generative virtual staining model).
-   - [Notebook 04](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/04_evaluation_and_benchmarking.ipynb): Evaluation & Benchmarking (PSNR, SSIM, Pearson Correlation Coefficient, MAE, cell-level viral reporter signal quantification).
+   - [Notebook 01](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/01_data_download_and_prep.ipynb): Data Download & Preparation (VIRVS dataset layout, RODARE access, synthetic mock generator).
+   - [Notebook 01b](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/01b_autoencoders_and_vaes.ipynb): Autoencoders & VAEs (Autoencoders vs VAEs, ELBO objective, generative sampling, latent space interpolation).
+   - [Notebook 02](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/02_baseline_regression_unet.ipynb): U-Net Baseline Regression (Predicting continuous infection fluorescence from brightfield).
+   - [Notebook 03](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/03_generative_pix2pix_gan.ipynb): Pix2Pix Conditional GAN (Generative virtual staining model).
+   - [Notebook 04](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/04_evaluation_and_benchmarking.ipynb): Evaluation & Benchmarking (PSNR, SSIM, Pearson Correlation Coefficient, MAE, cell-level viral reporter signal quantification).
 
 ---
 
@@ -34,8 +34,8 @@ This repository is divided into two primary components:
 | :--------------| :------------------------------| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 09:00 - 10:30 | **Lecture (Slides)**          | Inverse problems, distribution learning, VAEs, Pix2Pix GANs, Diffusion models                                                                                                                                                                                                         |
 | 10:30 - 10:45 | **Coffee Break**              |                                                                                                                                                                                                                                                                                       |
-| 10:45 - 12:15 | **Hands-on Workshop**         | [Notebooks 01](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/01_data_download_and_prep.ipynb)–[03](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/03_generative_pix2pix_gan.ipynb): Data loading, U-Net regression, Pix2Pix GAN training |
-| 12:15 - 12:45 | **Benchmarking & Discussion** | [Notebook 04](https://githubtocolab.com/casus/GenAI_BIA_Course/blob/main/practical/04_evaluation_and_benchmarking.ipynb): Metric evaluation (PSNR, SSIM, PCC, cell reporter stats) & VIRVS benchmarks                                                                                 |
+| 10:45 - 12:15 | **Hands-on Workshop**         | [Notebooks 01](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/01_data_download_and_prep.ipynb)–[03](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/03_generative_pix2pix_gan.ipynb): Data loading, U-Net regression, Pix2Pix GAN training |
+| 12:15 - 12:45 | **Benchmarking & Discussion** | [Notebook 04](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/04_evaluation_and_benchmarking.ipynb): Metric evaluation (PSNR, SSIM, PCC, cell reporter stats) & VIRVS benchmarks                                                                                 |
 | 12:45 - 13:00 | **Q&A & Wrap-up**             | Future directions: Diffusion models, physics-informed priors, unpaired translation                                                                                                                                                                                                    |
 
 ---
