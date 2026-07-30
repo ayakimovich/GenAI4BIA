@@ -725,9 +725,14 @@ else:
 
 In this section, we explore the dataset structure introduced in the VIRVS benchmark. The benchmark maps non-destructive label-free **Brightfield** micrographs ($y$) to continuous **Fluorescence** infection reporter signals ($x$).
 
+**Morphological Inductive Bias**:
+To provide a clear, learnable mapping in synthetic data, we enforce a strict morphological rule:
+- **Infected Cells**: Rendered in Brightfield as **circles with a central hole** (hollow/donut shape) $\\rightarrow$ express **positive fluorescence**.
+- **Uninfected Cells**: Rendered in Brightfield as **solid circles without a hole** $\\rightarrow$ express **zero fluorescence**.
+
 **Key Learning Objectives**:
 1. Understand dataset pair structure for virtual staining.
-2. Generate/load paired micrographs using synthetic mock generator.
+2. Generate/load paired micrographs enforcing morphological inductive bias.
 3. Implement PyTorch `Dataset` & `DataLoader` pipelines."""),
 
     code_cell("""import matplotlib.pyplot as plt

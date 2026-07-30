@@ -10,17 +10,27 @@ import scipy.ndimage as ndimage
 from PIL import Image
 
 
-def generate_single_cell(shape=(128, 128), center=(64, 64), radius=20, eccentricity=0.8):
-    """Generate cell membrane mask and intracellular texture."""
+def generate_single_cell(shape=(128, 128), center=(64, 64), radius=20, eccentricity=0.8, has_hole=False):
+    """Generate cell membrane mask with optional central hole for infected inductive bias."""
     y, x = np.ogrid[:shape[0], :shape[1]]
     dist_from_center = np.sqrt(((x - center[1]) / eccentricity)**2 + (y - center[0])**2)
-    cell_mask = dist_from_center <= radius
-    return cell_mask.astype(np.float32)
+    cell_mask = (dist_from_center <= radius).astype(np.float32)
+    
+    hole_mask = np.zeros(shape, dtype=np.float32)
+    if has_hole:
+        hole_radius = radius * np.random.uniform(0.35, 0.5)
+        hole_mask = (dist_from_center <= hole_radius).astype(np.float32)
+        
+    return cell_mask, hole_mask
 
 
 def generate_virvs_pair(image_size=(256, 256), num_cells=15, infection_rate=0.6, seed=None):
     """
     Generate a paired brightfield micrograph and infection reporter fluorescence image.
+    
+    Inductive Bias:
+    - Circles WITH a central hole in Brightfield -> Positive Fluorescence (Infected)
+    - Circles WITHOUT a hole in Brightfield -> Zero Fluorescence (Uninfected)
     
     Parameters:
     -----------
@@ -54,44 +64,46 @@ def generate_virvs_pair(image_size=(256, 256), num_cells=15, infection_rate=0.6,
     centers = []
     for yc in y_coords:
         for xc in x_coords:
-            centers.append((yc + np.random.uniform(-10, 10), xc + np.random.uniform(-10, 10)))
+            centers.append((yc + np.random.uniform(-8, 8), xc + np.random.uniform(-8, 8)))
     np.random.shuffle(centers)
     centers = centers[:num_cells]
     
     for i, center in enumerate(centers):
-        radius = np.random.uniform(16, 25)
-        eccentricity = np.random.uniform(0.7, 1.3)
-        cell_mask = generate_single_cell((H, W), center, radius, eccentricity)
+        radius = np.random.uniform(16, 24)
+        eccentricity = np.random.uniform(0.8, 1.2)
         
-        # Smooth cell mask boundary
-        smooth_cell = ndimage.gaussian_filter(cell_mask, sigma=1.5)
-        cell_masks.append(cell_mask > 0.5)
+        # Inductive bias: circles with a hole in Brightfield are infected
+        is_infected = np.random.rand() < infection_rate
         
-        # 1. Render Brightfield channel (refractive index changes, phase contrast boundaries)
-        cell_interior = ndimage.gaussian_filter(cell_mask, sigma=3.0)
-        boundary = ndimage.laplace(smooth_cell)
+        cell_mask, hole_mask = generate_single_cell((H, W), center, radius, eccentricity, has_hole=is_infected)
         
-        brightfield -= cell_interior * 0.25
+        # Render Brightfield channel (cells with a hole have hollow/ring morphology)
+        cell_body = np.clip(cell_mask - hole_mask, 0.0, 1.0)
+        smooth_body = ndimage.gaussian_filter(cell_body, sigma=1.2)
+        cell_interior = ndimage.gaussian_filter(cell_body, sigma=2.5)
+        boundary = ndimage.laplace(smooth_body)
+        
+        brightfield -= cell_interior * 0.28
         brightfield += boundary * 0.15
         
+        cell_masks.append(cell_mask > 0.5)
+        
         # 2. Render Virus Infection Reporter Fluorescence channel
-        is_infected = np.random.rand() < infection_rate
         if is_infected:
-            # Viral replication factories / GFP intensity centered in cytoplasm/nucleus
-            infection_intensity = np.random.uniform(0.4, 1.0)
+            # Positive fluorescence only for circles with a hole
+            infection_intensity = np.random.uniform(0.6, 1.0)
             noise_texture = np.random.rand(H, W) * 0.2
-            cell_fluo = smooth_cell * infection_intensity * (0.8 + noise_texture)
-            cell_fluo = ndimage.gaussian_filter(cell_fluo, sigma=1.0)
+            cell_fluo = ndimage.gaussian_filter(cell_mask, sigma=1.0) * infection_intensity * (0.8 + noise_texture)
             fluorescence += cell_fluo
 
     # Add realistic illumination gradient & camera noise
     y_grid, x_grid = np.ogrid[:H, :W]
-    vignette = 1.0 - 0.15 * (((x_grid - W/2)/(W/2))**2 + ((y_grid - H/2)/(H/2))**2)
+    vignette = 1.0 - 0.12 * (((x_grid - W/2)/(W/2))**2 + ((y_grid - H/2)/(H/2))**2)
     brightfield *= vignette
     
     # Add shot noise
-    brightfield += np.random.normal(0, 0.02, (H, W))
-    fluorescence += np.random.normal(0, 0.01, (H, W))
+    brightfield += np.random.normal(0, 0.015, (H, W))
+    fluorescence += np.random.normal(0, 0.008, (H, W))
     
     # Clip to valid range [0, 1]
     brightfield = np.clip(brightfield, 0.0, 1.0).astype(np.float32)
