@@ -5,15 +5,15 @@ Hands-on tutorial series reproducing the **VIRVS** (Virus Infection Reporter Vir
 
 ---
 
-## Notebook Structure
+## Workshop Notebook
 
-| Notebook | Topic | Description |
-| :--- | :--- | :--- |
-| [`01_data_download_and_prep.ipynb`](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/01_data_download_and_prep.ipynb) | **Data Pipeline** | Loading VIRVS datasets, dataset structure, mock generator for quick testing, normalization |
-| [`01b_autoencoders_and_vaes.ipynb`](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/01b_autoencoders_and_vaes.ipynb) | **AEs, VAEs & Generative Sampling** | Autoencoders vs VAEs, ELBO objective, generative sampling $z \sim \mathcal{N}(0, I)$, latent space interpolation |
-| [`02_baseline_regression_unet.ipynb`](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/02_baseline_regression_unet.ipynb) | **U-Net Baseline** | Training 2D U-Net for continuous viral reporter fluorescence prediction ($L_1 / L_2$ loss) |
-| [`03_generative_pix2pix_gan.ipynb`](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/03_generative_pix2pix_gan.ipynb) | **Pix2Pix cGAN** | Training conditional GAN virtual staining model ($L_{\text{cGAN}} + \lambda L_1$) |
-| [`04_evaluation_and_benchmarking.ipynb`](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/04_evaluation_and_benchmarking.ipynb) | **VIRVS Benchmarking** | Model evaluation across PSNR, SSIM, PCC, MAE, and cell-level viral reporter quantification |
+🚀 **[Practical Workshop Notebook (`practical_workshop.ipynb`)](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/practical_workshop.ipynb)**: Recommended for Google Colab. Runs the entire 5-part workshop within a single active session so generated data and trained model checkpoints persist seamlessly across sections:
+
+1. **Section 1: Data Download & Preparation** (Dataset pair structure, RODARE access, synthetic mock generator)
+2. **Section 2: Autoencoders, VAEs & Generative Sampling** (ELBO objective, latent sampling $z \sim \mathcal{N}(0, I)$, latent space interpolation)
+3. **Section 3: Baseline U-Net Regression for Virtual Staining** (Continuous viral reporter fluorescence prediction)
+4. **Section 4: Pix2Pix Conditional GAN for Virtual Staining** (Generative virtual staining model with adversarial loss)
+5. **Section 5: Evaluation & VIRVS Benchmarking Suite** (Image fidelity PSNR, SSIM, PCC, MAE & single-cell viral quantification)
 
 ---
 
@@ -29,8 +29,8 @@ Hands-on tutorial series reproducing the **VIRVS** (Virus Infection Reporter Vir
 
 ## Quickstart
 
-Run [Notebook 01](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/01_data_download_and_prep.ipynb) first to verify environment setup and generate initial training data:
+To run the complete workshop in a single session:
 
 ```bash
-jupyter notebook 01_data_download_and_prep.ipynb
+jupyter notebook practical_workshop.ipynb
 ```
