@@ -201,8 +201,8 @@ def tikhonov_reconstruction(y, A, lmbda=1e-2):
 
         Compression into a low-dimensional bottleneck $z \in \R^d$ ($d \ll N$):
         \begin{align*}
-            z &= e_\phi(x) \quad \text{(Encoder)} \\
-            \hat{x} &= d_\theta(z) \quad \text{(Decoder)}
+            z       & = e_\phi(x) \quad \text{(Encoder)}   \\
+            \hat{x} & = d_\theta(z) \quad \text{(Decoder)}
         \end{align*}
         Reconstruction Loss: $\mathcal{L}_{\text{AE}} = \|x - d_\theta(e_\phi(x))\|_2^2$
 
@@ -240,6 +240,112 @@ class Autoencoder(nn.Module):
         return self.decoder(z)
 \end{lstlisting}
     \end{columns}
+\end{frame}
+
+
+\begin{frame}{Autoencoder (AE) Network Architecture \& Tensor Dimensions}
+    \centering
+    \vspace{-1mm}
+    {\fontsize{8pt}{9.5pt}\selectfont \textbf{Layer-by-Layer Tensor Transformation} (Matching PyTorch Implementation)}
+    \vspace{0.5mm}
+
+    \resizebox{0.96\textwidth}{!}{%
+        \begin{tikzpicture}[
+                node distance=1.5cm,
+                layerbox/.style={draw=mainblue!90, fill=mainblue!12, rounded corners=3pt, minimum width=1.4cm, minimum height=2.2cm, align=center, font=\sffamily, thick},
+                featbox/.style={draw=accentblue!90, fill=accentblue!25, rounded corners=3pt, minimum width=1.1cm, minimum height=1.6cm, align=center, font=\sffamily, thick},
+                latentbox/.style={draw=keywordpurple!90, fill=keywordpurple!30, rounded corners=3pt, minimum width=0.7cm, minimum height=1.2cm, align=center, font=\sffamily, thick},
+                reconbox/.style={draw=commentgreen!90, fill=commentgreen!20, rounded corners=3pt, minimum width=1.4cm, minimum height=2.2cm, align=center, font=\sffamily, thick},
+                arrowlabel/.style={font=\fontsize{6.5pt}{7.5pt}\selectfont\bfseries, align=center}
+            ]
+            % 1. Input Image
+            \node[layerbox] (input) {
+                \textbf{Input $x$}\\[3pt]
+                \fontsize{7pt}{8pt}\selectfont
+                $1 \times 256 \times 256$
+            };
+            \node[above=3pt of input, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{mainblue}] {Micrograph};
+
+            % Arrow 1
+            \draw[->, >=Stealth, line width=1.2pt, mainblue] (input) --
+            node[above=1pt, arrowlabel, color=mainblue] {Conv2d(1, 16)\\[-2pt]\tiny (k=3, s=2, p=1)}
+            node[below=1pt, arrowlabel, color=commentgreen] {+ ReLU} ++(2.4, 0) node[coordinate] (p1) {};
+
+            % 2. Encoder Conv Features (Stacked 3D-effect layers)
+            \node[featbox, right=0.0cm of p1] (enc_feat) {
+                \textbf{Enc Conv}\\[3pt]
+                \fontsize{7pt}{8pt}\selectfont
+                $16 \times 128 \times 128$
+            };
+            \begin{scope}[on background layer]
+                \filldraw[draw=accentblue!70, fill=accentblue!15, rounded corners=3pt] ($(enc_feat.south west)+(0.08,0.08)$) rectangle ($(enc_feat.north east)+(0.08,0.08)$);
+                \filldraw[draw=accentblue!70, fill=accentblue!10, rounded corners=3pt] ($(enc_feat.south west)+(0.16,0.16)$) rectangle ($(enc_feat.north east)+(0.16,0.16)$);
+            \end{scope}
+            \node[above=3pt of enc_feat, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{accentblue}] {Feature Map};
+
+            % Arrow 2
+            \draw[->, >=Stealth, line width=1.2pt, mainblue] (enc_feat) --
+            node[above=1pt, arrowlabel, color=mainblue] {Flatten\\[-2pt]\& Linear}
+            node[below=1pt, arrowlabel, color=black!60] {\tiny 262k $\to$ 32} ++(2.2, 0) node[coordinate] (p2) {};
+
+            % 3. Latent Bottleneck (z)
+            \node[latentbox, right=0.0cm of p2] (latent) {
+                \textbf{$z$}\\[2pt]
+                \fontsize{7pt}{8pt}\selectfont
+                $32$
+            };
+            \node[above=3pt of latent, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{keywordpurple}] {Bottleneck};
+
+            % Arrow 3
+            \draw[->, >=Stealth, line width=1.2pt, mainblue] (latent) --
+            node[above=1pt, arrowlabel, color=mainblue] {Linear\\[-2pt]\& Unflatten}
+            node[below=1pt, arrowlabel, color=black!60] {\tiny 32 $\to$ 262k} ++(2.2, 0) node[coordinate] (p3) {};
+
+            % 4. Decoder Conv Features
+            \node[featbox, right=0.0cm of p3] (dec_feat) {
+                \textbf{Dec Conv}\\[3pt]
+                \fontsize{7pt}{8pt}\selectfont
+                $16 \times 128 \times 128$
+            };
+            \begin{scope}[on background layer]
+                \filldraw[draw=accentblue!70, fill=accentblue!15, rounded corners=3pt] ($(dec_feat.south west)+(0.08,0.08)$) rectangle ($(dec_feat.north east)+(0.08,0.08)$);
+                \filldraw[draw=accentblue!70, fill=accentblue!10, rounded corners=3pt] ($(dec_feat.south west)+(0.16,0.16)$) rectangle ($(dec_feat.north east)+(0.16,0.16)$);
+            \end{scope}
+            \node[above=3pt of dec_feat, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{accentblue}] {Feature Map};
+
+            % Arrow 4
+            \draw[->, >=Stealth, line width=1.2pt, mainblue] (dec_feat) --
+            node[above=1pt, arrowlabel, color=mainblue] {ConvTranspose2d\\[-2pt]\tiny (16, 1, s=2, op=1)}
+            node[below=1pt, arrowlabel, color=commentgreen] {+ Sigmoid} ++(2.6, 0) node[coordinate] (p4) {};
+
+            % 5. Reconstructed Output
+            \node[reconbox, right=0.0cm of p4] (output) {
+                \textbf{Output $\hat{x}$}\\[3pt]
+                \fontsize{7pt}{8pt}\selectfont
+                $1 \times 256 \times 256$
+            };
+            \node[above=3pt of output, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{commentgreen}] {Reconstruction};
+
+            % Grouping Brackets / Annotations underneath (Encoder left of bottleneck z, Decoder right of bottleneck z)
+            \draw[thick, mainblue, decorate, decoration={brace, mirror, raise=3pt}]
+            ($(input.south west)+(-0.05,-0.45)$) -- ($(latent.west |- input.south)+(-0.1,-0.45)$)
+            node[midway, below=7pt, font=\fontsize{7pt}{8pt}\selectfont\bfseries\color{mainblue}] {Encoder $e_\phi(x)$: Downsampling ($256 \to 128$) \& Compression ($d=32$)};
+
+            \draw[thick, commentgreen!80!black, decorate, decoration={brace, mirror, raise=3pt}]
+            ($(latent.east |- input.south)+(0.1,-0.45)$) -- ($(output.south east)+(0.05,-0.45)$)
+            node[midway, below=7pt, font=\fontsize{7pt}{8pt}\selectfont\bfseries\color{commentgreen!80!black}] {Decoder $d_\theta(z)$: Expansion \& Reconstruction ($128 \to 256$)};
+        \end{tikzpicture}%
+    }
+
+    \vspace{0mm}
+    \begin{block}{Architecture Summary \& Key Takeaways}
+        \fontsize{7pt}{8.5pt}\selectfont
+        \begin{itemize}
+            \item \textbf{High Compression Ratio}: Reduces input dimension from $256 \times 256 = 65,536$ pixels down to $d = 32$ latent variables ($> 2,000 \times$ compression ratio).
+            \item \textbf{Symmetric Structural Flow}: Encoder contracts spatial dimensions ($256 \to 128$) while expanding channel depth ($1 \to 16$); Decoder mirrors this flow.
+            \item \textbf{End-to-End Objective}: Optimized using Mean Squared Error $\|x - \hat{x}\|_2^2$ to force $z$ to capture core morphological traits.
+        \end{itemize}
+    \end{block}
 \end{frame}
 
 
@@ -282,6 +388,131 @@ def generate_samples(decoder, num_samples=16, latent_dim=32, device='cpu'):
     return x_synthetic # [num_samples, 1, H, W]
 \end{lstlisting}
     \end{columns}
+\end{frame}
+
+
+\begin{frame}{Variational Autoencoder (VAE) Architecture \& Sampling}
+    \centering
+    \vspace{-2mm}
+    {\fontsize{8pt}{9.5pt}\selectfont \textbf{Layer-by-Layer Probabilistic Tensor Transformation} (Reparameterization Trick)}
+    \vspace{0mm}
+
+    \resizebox{0.84\textwidth}{!}{%
+        \begin{tikzpicture}[
+                node distance=1.5cm,
+                layerbox/.style={draw=mainblue!90, fill=mainblue!12, rounded corners=3pt, minimum width=1.3cm, minimum height=2.2cm, align=center, font=\sffamily, thick},
+                featbox/.style={draw=accentblue!90, fill=accentblue!25, rounded corners=3pt, minimum width=1.0cm, minimum height=1.6cm, align=center, font=\sffamily, thick},
+                distbox/.style={draw=keywordpurple!90, fill=keywordpurple!20, rounded corners=3pt, minimum width=0.6cm, minimum height=0.9cm, align=center, font=\sffamily, thick},
+                reparbox/.style={draw=stringred!90, fill=stringred!20, rounded corners=3pt, minimum width=0.8cm, minimum height=1.2cm, align=center, font=\sffamily, thick},
+                reconbox/.style={draw=commentgreen!90, fill=commentgreen!20, rounded corners=3pt, minimum width=1.3cm, minimum height=2.2cm, align=center, font=\sffamily, thick},
+                arrowlabel/.style={font=\fontsize{6pt}{7pt}\selectfont\bfseries, align=center}
+            ]
+            % 1. Input Image
+            \node[layerbox] (input) {
+                \textbf{Input $x$}\\[3pt]
+                \fontsize{6.5pt}{7.5pt}\selectfont
+                $1 \times 256 \times 256$
+            };
+            \node[above=3pt of input, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{mainblue}] {Micrograph};
+
+            % Arrow 1
+            \draw[->, >=Stealth, line width=1.1pt, mainblue] (input) --
+            node[above=1pt, arrowlabel, color=mainblue] {Conv2d(1, 16)\\[-2pt]\tiny (k=3, s=2)}
+            node[below=1pt, arrowlabel, color=commentgreen] {+ ReLU} ++(2.2, 0) node[coordinate] (p1) {};
+
+            % 2. Encoder Conv Features
+            \node[featbox, right=0.0cm of p1] (enc_feat) {
+                \textbf{Enc Conv}\\[3pt]
+                \fontsize{6.5pt}{7.5pt}\selectfont
+                $16 \times 128^2$
+            };
+            \begin{scope}[on background layer]
+                \filldraw[draw=accentblue!70, fill=accentblue!15, rounded corners=3pt] ($(enc_feat.south west)+(0.07,0.07)$) rectangle ($(enc_feat.north east)+(0.07,0.07)$);
+            \end{scope}
+            \node[above=3pt of enc_feat, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{accentblue}] {Feature Map};
+
+            % Split Arrows to mu and log_var
+            \node[coordinate, right=0.75cm of enc_feat] (split) {};
+            \draw[line width=1.1pt, mainblue] (enc_feat) -- (split);
+
+            % 3a. Mean (mu) box
+            \node[distbox, above right=0.45cm and 0.2cm of split] (mu) {
+                \textbf{$\mu$}\\[1pt]
+                \tiny 32
+            };
+            \draw[->, >=Stealth, line width=1.1pt, mainblue] (split) |- node[above=1pt of split, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{mainblue}] {Linear} (mu);
+
+            % 3b. Log Variance (log_var) box
+            \node[distbox, below right=0.45cm and 0.2cm of split] (logvar) {
+                \textbf{$\log\sigma^2$}\\[1pt]
+                \tiny 32
+            };
+            \draw[->, >=Stealth, line width=1.1pt, mainblue] (split) |- node[below=1pt of split, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{mainblue}] {Linear} (logvar);
+
+            % Noise Input epsilon ~ N(0, I)
+            \node[coordinate, above=0.55cm of mu] (eps_in) {};
+            \node[above=-2pt of eps_in, font=\fontsize{7pt}{8pt}\selectfont\bfseries\color{stringred}] {$\epsilon \sim \mathcal{N}(0, I)$};
+
+            % 4. Reparameterization Node z = mu + sigma * eps
+            \node[reparbox, right=1.2cm of split] (repar) {
+                \textbf{$z$}\\[2pt]
+                \fontsize{6.5pt}{7.5pt}\selectfont
+                $\mu + \sigma \odot \epsilon$
+            };
+            \node[above=5pt of repar, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{stringred}] {Reparam.};
+
+            \draw[->, >=Stealth, line width=1.1pt, keywordpurple] (mu) -| (repar);
+            \draw[->, >=Stealth, line width=1.1pt, keywordpurple] (logvar) -| (repar);
+            \draw[->, >=Stealth, line width=1.1pt, stringred, dashed] (eps_in) -- (repar);
+
+            % Arrow to Decoder (narrower arrow)
+            \draw[->, >=Stealth, line width=1.1pt, mainblue] (repar) --
+            node[above=1pt, arrowlabel, color=mainblue] {Linear\\[-2pt]\&\\[-2pt] Unflatten} ++(1.5, 0) node[coordinate] (p3) {};
+
+            % 5. Decoder Conv Features
+            \node[featbox, right=0.0cm of p3] (dec_feat) {
+                \textbf{Dec Conv}\\[3pt]
+                \fontsize{6.5pt}{7.5pt}\selectfont
+                $16 \times 128^2$
+            };
+            \begin{scope}[on background layer]
+                \filldraw[draw=accentblue!70, fill=accentblue!15, rounded corners=3pt] ($(dec_feat.south west)+(0.07,0.07)$) rectangle ($(dec_feat.north east)+(0.07,0.07)$);
+            \end{scope}
+            \node[above=3pt of dec_feat, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{accentblue}] {Feature Map};
+
+            % Arrow 4
+            \draw[->, >=Stealth, line width=1.1pt, mainblue] (dec_feat) --
+            node[above=1pt, arrowlabel, color=mainblue] {ConvTranspose2d\\[-2pt]\tiny (16, 1, s=2)}
+            node[below=1pt, arrowlabel, color=commentgreen] {+ Sigmoid} ++(2.4, 0) node[coordinate] (p4) {};
+
+            % 6. Reconstructed Output
+            \node[reconbox, right=0.0cm of p4] (output) {
+                \textbf{Output $\hat{x}$}\\[3pt]
+                \fontsize{6.5pt}{7.5pt}\selectfont
+                $1 \times 256 \times 256$
+            };
+            \node[above=3pt of output, font=\fontsize{7.5pt}{8.5pt}\selectfont\bfseries\color{commentgreen}] {Reconstruction};
+
+            % Brackets underneath
+            \draw[thick, mainblue, decorate, decoration={brace, mirror, raise=3pt}]
+            ($(input.south west)+(-0.05,-0.45)$) -- ($(repar.west |- input.south)+(-0.08,-0.45)$)
+            node[midway, below=7pt, font=\fontsize{7pt}{8pt}\selectfont\bfseries\color{mainblue}] {Probabilistic Encoder $q_\phi(z|x) \to (\mu, \log\sigma^2)$};
+
+            \draw[thick, commentgreen!80!black, decorate, decoration={brace, mirror, raise=3pt}]
+            ($(repar.east |- input.south)+(0.08,-0.45)$) -- ($(output.south east)+(0.05,-0.45)$)
+            node[midway, below=7pt, font=\fontsize{7pt}{8pt}\selectfont\bfseries\color{commentgreen!80!black}] {Generative Decoder $p_\theta(x|z) \to \hat{x}$};
+        \end{tikzpicture}%
+    }
+
+    \vspace{0mm}
+    \begin{block}{ELBO Objective \& Generative Sampling}
+        \fontsize{7pt}{8.5pt}\selectfont
+        \begin{itemize}
+            \item \textbf{ELBO Loss}: $\mathcal{L}_{\text{VAE}} = \underbrace{\|x - \hat{x}\|_2^2}_{\text{Reconstruction Error}} + \beta \cdot \underbrace{D_{\text{KL}}\left(q_\phi(z|x) \,||\, \mathcal{N}(0, I)\right)}_{\text{KL Regularization Penalty}}$
+            \item \textbf{Reparameterization Trick}: $z = \mu + \sigma \odot \epsilon$ allows backpropagation gradients to flow through stochastic sampling node!
+            \item \textbf{Generative Synthesis}: To sample NEW synthetic cells, bypass Encoder and sample $z \sim \mathcal{N}(0, I) \to \text{Decoder}(z) \to \hat{x}_{\text{synthetic}}$.
+        \end{itemize}
+    \end{block}
 \end{frame}
 
 
