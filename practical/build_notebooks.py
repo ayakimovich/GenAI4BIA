@@ -690,14 +690,14 @@ plot_virtual_staining_comparison(
 nb_master = make_nb([
     md_cell("""# Practical Workshop: Generative AI for Bioimage Analysis (VIRVS Benchmark)
 
-Welcome to the hands-on practical workshop! This consolidated notebook covers the entire hands-on tutorial series reproducing the **VIRVS** (Virus Infection Reporter Virtual Staining) benchmark from:
+Welcome to the hands-on practical workshop! This consolidated notebook covers the entire hands-on tutorial series creating synthetic data to illustrate the principles of the **VIRVS** (Virus Infection Reporter Virtual Staining) benchmark from:
 > Wyrzykowska, M., della Maggiora, G., Deshpande, N., Mokarian, A., & Yakimovich, A. (2024/2025). *A Benchmark for Virus Infection Reporter Virtual Staining in Fluorescence and Brightfield Microscopy*. Scientific Data / bioRxiv. [GitHub: casus/virvs](https://github.com/casus/virvs)
 
 ---
 
 ### Workshop Navigation & Structure:
 - **Section 1: Data Download & Preparation** (Dataset pair structure, RODARE access, synthetic mock generator)
-- **Section 2: Autoencoders, VAEs & Generative Sampling** (ELBO objective, latent sampling $z \\sim \\mathcal{N}(0, I)$, latent space interpolation)
+- **Section 2: Autoencoders, VAEs & Generative Sampling** (ELBO objective, latent sampling $z \sim \mathcal{N}(0, I)$, latent space interpolation)
 - **Section 3: U-Net Baseline Regression** (Continuous viral reporter fluorescence prediction)
 - **Section 4: Pix2Pix Conditional GAN** (Generative virtual staining model with adversarial loss)
 - **Section 5: Evaluation & Benchmarking** (Image fidelity PSNR, SSIM, PCC, MAE & single-cell viral quantification)
@@ -727,8 +727,8 @@ In this section, we explore the dataset structure introduced in the VIRVS benchm
 
 **Morphological Inductive Bias**:
 To provide a clear, learnable mapping in synthetic data, we enforce a strict morphological rule:
-- **Infected Cells**: Rendered in Brightfield as **circles with a central hole** (hollow/donut shape) $\\rightarrow$ express **positive fluorescence**.
-- **Uninfected Cells**: Rendered in Brightfield as **solid circles without a hole** $\\rightarrow$ express **zero fluorescence**.
+- **Infected Cells**: Rendered in Brightfield as **circles with a central hole** (hollow/donut shape) $\rightarrow$ express **positive fluorescence**.
+- **Uninfected Cells**: Rendered in Brightfield as **solid circles without a hole** $\rightarrow$ express **zero fluorescence**.
 
 **Key Learning Objectives**:
 1. Understand dataset pair structure for virtual staining.
@@ -781,8 +781,8 @@ In this section, we explore **Autoencoders (AEs)** and **Variational Autoencoder
 
 **Key Learning Objectives**:
 1. Train a Convolutional Variational Autoencoder (VAE).
-2. Understand the ELBO loss function ($\\text{Reconstruction} + \\beta \\text{KL}$).
-3. Perform **Generative Sampling** by drawing $z \\sim \\mathcal{N}(0, I)$ to synthesize new cell images.
+2. Understand the ELBO loss function ($\text{Reconstruction} + \beta \text{KL}$).
+3. Perform **Generative Sampling** by drawing $z \sim \mathcal{N}(0, I)$ to synthesize new cell images.
 4. Perform **Latent Space Interpolation** between a GFP-negative cell ($z_A$) and a GFP-positive cell ($z_B$)."""),
 
     code_cell("""import torch
@@ -956,7 +956,7 @@ In this section, we train a **Pix2Pix Conditional Generative Adversarial Network
 
 **Key Learning Objectives**:
 1. Define the PatchGAN Discriminator ($D$) and U-Net Generator ($G$).
-2. Combine Adversarial Loss ($L_{\\text{cGAN}}$) with $L_1$ Reconstruction Loss.
+2. Combine Adversarial Loss ($L_{\text{cGAN}}$) with $L_1$ Reconstruction Loss.
 3. Understand adversarial training dynamics and discriminator/generator loss tracking.
 4. Save generator checkpoints and inspect virtual staining outputs."""),
 
@@ -1062,7 +1062,7 @@ In this section, we perform quantitative benchmarking comparing the **U-Net Base
 **Key Learning Objectives**:
 1. Calculate standard image fidelity metrics: **PSNR**, **SSIM**, **PCC**, and **MAE**.
 2. Generate a structured quantitative benchmark comparison table.
-3. Perform single-cell infection reporter signal quantification ($I_{\\text{viral}}$).
+3. Perform single-cell infection reporter signal quantification ($I_{\text{viral}}$).
 4. Plot ground truth vs predicted viral reporter intensities across cells."""),
 
     code_cell("""import numpy as np

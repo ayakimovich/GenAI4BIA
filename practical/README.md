@@ -1,6 +1,6 @@
-# Practical Workshop: VIRVS Benchmark Reproduction
+# Practical Workshop: VIRVS Benchmark Principles
 
-Hands-on tutorial series reproducing the **VIRVS** (Virus Infection Reporter Virtual Staining) benchmark from:
+Hands-on tutorial series creating synthetic data to illustrate the principles of the **VIRVS** (Virus Infection Reporter Virtual Staining) benchmark from:
 > Wyrzykowska, M., della Maggiora, G., Deshpande, N., Mokarian, A., & Yakimovich, A. (2024/2025). *A Benchmark for Virus Infection Reporter Virtual Staining in Fluorescence and Brightfield Microscopy*. Scientific Data / bioRxiv. [GitHub: casus/virvs](https://github.com/casus/virvs)
 
 ---
