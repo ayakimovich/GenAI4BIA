@@ -1,4 +1,5 @@
-# Generative AI for Bioimage Analysis
+# Generative AI for Bioimage Analysis:
+## Bridging Scales through Generative AI for Inverse Problems in Biomedical Computational Microscopy
 
 A half-day course covering the mathematical foundations of generative AI, inverse problems, and distribution learning in bioimage analysis, paired with a practical hands-on benchmark reproduction of **VIRVS** (Virus Infection Reporter Virtual Staining).
 
