@@ -1,35 +1,50 @@
-% Section 3: Generative Model Families (VAEs, GANs, Diffusion)
-
 \section{Generative Model Families}
 
+\begin{frame}[plain]
+    \vfill
+    \centering
+    \begin{tikzpicture}
+        \node[draw=mainblue!90, fill=mainblue!10, rounded corners=8pt, inner sep=16pt, minimum width=0.82\paperwidth, align=center, thick] {
+            {\fontsize{9pt}{11pt}\selectfont \bfseries \color{accentblue} SECTION 3}\\[6pt]
+            {\fontsize{18pt}{22pt}\selectfont \bfseries \color{mainblue} Generative Model Families}\\[8pt]
+            {\fontsize{8.5pt}{10.5pt}\selectfont \color{black!70} Variational Autoencoders (VAEs), Pix2Pix GANs \& Score-based Diffusion Models}
+        };
+    \end{tikzpicture}
+    \vfill
+\end{frame}
+
 \begin{frame}[fragile]{Variational Autoencoders (VAEs) \& The ELBO}
-\begin{columns}
+\begin{columns}[t]
 \column{0.48\textwidth}
 \textbf{Mathematical Formulation}
 
-Evidence Lower Bound (ELBO) objective function:
+Evidence Lower Bound (ELBO):
 \begin{equation*}
-\log p_\theta(x) \ge \E_{q_\phi(z|x)}[\log p_\theta(x|z)] - \KL{q_\phi(z|x)}{p(z)}
+\begin{aligned}
+\log p_\theta(x) \ge \; & \E_{q_\phi(z|x)}[\log p_\theta(x|z)] \\
+& - \KL{q_\phi(z|x)}{p(z)}
+\end{aligned}
 \end{equation*}
-
-\begin{itemize}
-    \item First term: Reconstruction log-likelihood (MSE/BCE).
-    \item Second term: Latent prior regularization ($p(z) = \mathcal{N}(0, I)$).
+{\fontsize{7pt}{8pt}\selectfont
+\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+    \item \textbf{Likelihood}: Reconstruction fidelity (MSE/BCE).
+    \item \textbf{KL Penalty}: Prior regularization ($p(z) = \mathcal{N}(0, I)$).
 \end{itemize}
+}
 
 Loss to minimize:
 \begin{equation*}
 \mathcal{L}_{\text{VAE}}(\theta, \phi) = \mathcal{L}_{\text{recon}} + \beta \, \mathcal{L}_{\text{KL}}
 \end{equation*}
 
-\vspace{1mm}
+\vspace{-1mm}
 \textbf{\color{commentgreen}Biological Intuition (DAPI $\to$ GFP):}\\
 \fontsize{6.5pt}{7.5pt}\selectfont
-Reconstruction ensures predicted GFP aligns with DAPI nuclei; KL penalty forces latent representations of cell infection state (GFP+ vs GFP-) into a smooth, continuous code space.
+Reconstruction aligns predicted GFP with DAPI nuclei; KL penalty forces latent infection states (GFP+ vs GFP-) into a smooth code space.
 
 \column{0.52\textwidth}
 \textbf{Python Code Equivalent}
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\fontsize{6.5pt}{7.5pt}\ttfamily]
 def vae_loss_function(x_recon, x_target, mu, log_var, beta=1.0):
     # Reconstruction loss (MSE)
     recon_loss = F.mse_loss(x_recon, x_target, reduction='mean')
