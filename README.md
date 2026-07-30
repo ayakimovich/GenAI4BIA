@@ -18,7 +18,7 @@ This repository is divided into two primary components:
      - *Diffusion Models (DDPM)*: Forward noise addition $q(x_t|x_{t-1})$, reverse process $p_\theta(x_{t-1}|x_t)$, noise prediction MSE loss $\|\epsilon - \epsilon_\theta(x_t, t)\|^2$.
    - **Every mathematical equation is presented alongside its Python / PyTorch code equivalent!**
 
-2. **`practical/` — VIRVS Benchmark Reproduction (Hands-on Tutorials)**
+2. **`practical/` — VIRVS Benchmark Principles using Synthetic Data (Hands-on Tutorials)**
    - Based on the paper:
      > Wyrzykowska, M., della Maggiora, G., Deshpande, N., Mokarian, A., & Yakimovich, A. (2024/2025). *A Benchmark for Virus Infection Reporter Virtual Staining in Fluorescence and Brightfield Microscopy*. Scientific Data / bioRxiv. [GitHub: casus/virvs](https://github.com/casus/virvs)
    - 🚀 **[Practical Workshop Notebook (`practical_workshop.ipynb`)](https://colab.research.google.com/github/ayakimovich/GenAI4BIA/blob/main/practical/practical_workshop.ipynb)**: Complete hands-on tutorial divided into 5 interactive sections:

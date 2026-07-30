@@ -31,7 +31,13 @@
 
 % Remove navigation symbols & Clean Footline
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{footline}{%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=0.4cm,dp=0.15cm,leftskip=0.8cm,rightskip=0.8cm]{footline}%
+        {\fontsize{7pt}{8pt}\selectfont \color{gray} Prof. Artur Yakimovich. MLID. CC BY 4.0 (2026)}%
+        \hfill%
+        {\fontsize{7pt}{8pt}\selectfont \color{gray} \insertframenumber{} / \inserttotalframenumber}%
+    \end{beamercolorbox}%
+}
 
 % Custom Frame Title with Vertically Centered Title & Logo + Drop Shadow Line
 \setbeamertemplate{frametitle}{
